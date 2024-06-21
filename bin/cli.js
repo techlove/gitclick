@@ -28,8 +28,11 @@ class CLI {
 
     async handleCommand() {
         if (this.command === 'sync') {
-            const repo = await this.lib.getRepo()
-            console.log({ repo })
+            // const repo = true || await this.lib.getRepo()
+            const branchName = await this.lib.getBranchName()
+            const taskId = await this.lib.extractTaskId(branchName)
+            const task = await this.lib.getTask('ANDA-1726' || taskId)
+            console.log(task.name)
         }
     }
 }
