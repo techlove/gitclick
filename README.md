@@ -33,7 +33,7 @@ If you added them to a shell rc file, restart your terminal to start using the p
 ### Sync new branch
 Prefix the branch name with a Custom ID, i.e "SOME-1337"
 ```bash
-gitclick SOME-1337-important-changes
+gitclick sync SOME-1337-important-changes
 ```
 
 - A new branch will be created, based on `GITCLICK_GITHUB_BASE_BRANCH`
@@ -43,7 +43,7 @@ gitclick SOME-1337-important-changes
 ### Sync current branch
 Make sure the current branch name is prefixed with a Custom ID, i.e "SOME-1337"
 ```bash
-gitclick
+gitclick sync
 ```
 
 If an open pull request exists for this branch:
