@@ -60,9 +60,10 @@ class GitClick {
     }
 
     async interpolateBranchName(args) {
-        const branchName = this.normalizeBranchName(args[0]
-            ? args.join('-').trim()
-            : await this.getCurrentBranchName())
+        const isNewBranch = Boolean(args[0])
+        const branchName = isNewBranch
+            ? this.normalizeBranchName(args.join('-').trim())
+            : await this.getCurrentBranchName()
 
         const { branchType, separator } = this.getBranchType(branchName)
         const taskId = this.extractTaskId(branchType
@@ -70,7 +71,7 @@ class GitClick {
             : branchName)
 
         return {
-            isNewBranch: Boolean(args[0]),
+            isNewBranch,
             taskId,
             branchType,
             separator,
@@ -299,9 +300,9 @@ class GitClick {
         }
     }
 
-    async updatePullRequest() {
+    async updatePullRequest(draft = true) {
         const pullRequest = await this.getPullRequest()
-        const request = await this.createSyncedPullRequest(true, true)
+        const request = await this.createSyncedPullRequest(draft, true)
         return this.octokit.pulls.update({
             ...request,
             pull_number: pullRequest.number
