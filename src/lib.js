@@ -14,8 +14,8 @@ class GitClick {
         this.clickup = new Clickup(env.GITCLICK_CLICKUP_PERSONAL_TOKEN);
         this.data = {
             github: {
-                org: env.GITCLICK_GITHUB_ORG,
-                base: env.GITCLICK_GITHUB_REPO_BASE,
+                org: null,
+                base: env.GITCLICK_GITHUB_REPO_BASE || 'main',
                 remoteUrl: null,
                 branchName: null,
                 repo: null,
@@ -110,23 +110,36 @@ class GitClick {
         })
     }
 
-    async getRepoName() {
-        if (this.data.github.repo) return this.data.github.repo
+    async getOrgAndRepo() {
+        if (this.data.github.org && this.data.github.repo) {
+            return {
+                org: this.data.github.org,
+                repo: this.data.github.repo
+            }
+        }
         const gitRemoteUrl = await this.getGitRemoteUrl()
-        const endPart = gitRemoteUrl.split(`git@github.com:${this.data.github.org}/`)[1] || ''
-        const repo = endPart.replace('.git', '')
-        this.data.github.repo = repo
-        return repo
+        const [org, r] = gitRemoteUrl
+            .replace('git@github.com:', '')
+            .split('/')
+        const orgAndRepo = {
+            org,
+            repo: r.replace('.git', '')
+        }
+
+        this.data.github.org = orgAndRepo.org
+        this.data.github.repo = orgAndRepo.repo
+
+        return orgAndRepo
     }
 
     async createPullRequest({ title, body, draft }, dry = false) {
         const branchName = await this.getBranchName()
-        const repo = await this.getRepoName()
+        const { repo, org } = await this.getOrgAndRepo()
 
         await this.pushBranchToRemote(branchName)
 
         const request = {
-            owner: this.data.github.org,
+            owner: org,
             repo,
             title,
             head: branchName,
@@ -179,14 +192,14 @@ class GitClick {
     async getPullRequest() {
         try {
             if (this.data.github.pullRequest) return this.data.github.pullRequest
-            const repo = await this.getRepoName()
+            const { repo, org } = await this.getOrgAndRepo()
             const branchName = await this.getBranchName()
             const response = await this.octokit.rest.pulls.list({
-                owner: this.data.github.org,
+                owner: org,
                 repo,
                 state: 'open',
                 base: this.data.github.base,
-                head: `${this.data.github.org}:${branchName}`
+                head: `${org}:${branchName}`
             })
 
             const pullRequest = response.data[0]

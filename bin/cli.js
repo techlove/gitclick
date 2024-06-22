@@ -31,6 +31,7 @@ class CLI {
         if (!this.command) {
             this.command = 'sync'
         }
+
         if (this.command === 'sync') {
             console.log(chalk.bold('Syncing task to pull request...'))
             const branchName = args[0] || await this.lib.getBranchName() || ''
