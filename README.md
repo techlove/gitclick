@@ -1,4 +1,8 @@
-# @zentus/gitclick
+# [@zentus/gitclick](https://github.com/zentus/gitclick)
+A simple CLI tool for syncing a Clickup Task to a GitHub Pull Request, and referencing that Pull Request in the Clickup Task.
+
+## Why do I need this?
+I got tired of doing it manually, maybe you are too.
 
 ## Install
 ```bash
