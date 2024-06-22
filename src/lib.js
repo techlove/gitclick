@@ -74,7 +74,7 @@ class GitClick {
             ['temp', 'temporary']
         ]
 
-        const foundOverride = overrides.find(([from, to]) => branchType.startsWith(from))
+        const foundOverride = overrides.find(([from, to]) => branchType.includes(from))
         return foundOverride
             ? foundOverride[1]
             : branchType
