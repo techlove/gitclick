@@ -4,7 +4,7 @@
   "description": "lib and cli for github<->clickup integration",
   "main": "./src/lib.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "link": "npm link"
   },
   "type": "module",
   "engines": {
@@ -15,10 +15,10 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@octokit/rest": "^21.0.0",
-    "axios": "^1.7.2",
+    "chalk": "^5.3.0",
     "clickup.js": "^3.0.4",
     "dotenv": "^16.4.5",
     "yargs": "^17.7.2"
