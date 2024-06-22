@@ -1,4 +1,4 @@
-# gitclick
+# @zentus/gitclick
 
 ## Install
 ```bash
