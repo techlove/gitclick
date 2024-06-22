@@ -4,6 +4,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { exec } from 'node:child_process';
 import { graphql } from "@octokit/graphql";
+import chalk from 'chalk';
 
 class GitClick {
     constructor({ env, base }) {
@@ -35,21 +36,26 @@ class GitClick {
         }
 
         this.branchTypes = [
+            'feature',
+            'bugfix',
             'hotfix',
+            'release',
+            'docs',
+            'refactor',
+            'performance',
+            'chore',
+            'ci',
+            'build',
+            'naming',
+            'style',
+            'perf',
             'fix',
             'bug',
-            'feature',
             'feat',
-            'perf',
-            'naming',
-            'build',
-            'chore',
-            'docs',
-            'ci',
-            'refactor',
-            'style',
+            'ux',
             'test',
             'temp',
+            'temporary'
         ]
 
         this.regex = {
@@ -60,6 +66,9 @@ class GitClick {
 
     async getTypeFromTaskTags(task) {
         task = task || await this.getCurrentTask()
+
+        if (!task) return null
+
         const tags = task.tags.map(tag => tag.name.toLowerCase())
         const type = this.branchTypes.find(type => tags.includes(type))
         return type
@@ -181,11 +190,18 @@ class GitClick {
                 include_markdown_description: 'true',
                 team_id: await this.getTeamId()
             })
-
             return body
         } catch (error) {
-            console.error(error)
+            return null
         }
+    }
+
+    log(message, isError = false) {
+        if (!message) return
+        const chalker = isError ? chalk.bold.red : chalk.bold
+        message = chalker(message)
+        console[isError ? 'error' : 'log'](message)
+        if (isError) return process.exit(1)
     }
 
     async getCurrentTask() {
@@ -194,6 +210,11 @@ class GitClick {
         const taskId = this.extractTaskId(branchName)
         if (!taskId) return null
         const task = await this.getTask(taskId)
+
+        if (!task) {
+            return null
+        }
+
         this.data.clickup.taskId = taskId
         this.data.clickup.task = task
         return task
@@ -256,6 +277,8 @@ class GitClick {
         //     .map(attachment => attachment.url)
         const task = await this.getCurrentTask()
 
+        if (!task) return null
+
         const bodyHeading = `### [${task.name}](${task.url})`
         const bodyDescription = `#### ${task.custom_id}\n${task.markdown_description}\n`
         // const bodyImages = ''
@@ -317,6 +340,8 @@ class GitClick {
 
     async createTaskComment(text, taskId) {
         taskId = taskId || (await this.getCurrentTask()).id
+
+        if (!taskId) return null
 
         await this.clickup.tasks.addComment(taskId, {
             comment_text: text,

@@ -48,6 +48,9 @@ class CLI {
 
             console.log(chalk.bold(`Fetching task "${taskId}"...`))
             const task = await this.lib.getTask(taskId)
+
+            if (!task) return this.lib.log(`Could not find a task with the Custom ID "${taskId}"`, true)
+
             const branchType = branchTypeFromArgs || await this.lib.getTypeFromTaskTags(task)
             const prependBranchType = Boolean(isNewBranch && !branchTypeFromArgs && branchType)
             const branchName = prependBranchType ? `${branchType}/${initBranchName}` : initBranchName
