@@ -10,8 +10,18 @@
   "bin": {
     "gitclick": "bin/cli.js"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zentus/gitclick"
+  },
+  "keywords": [
+    "github",
+    "clickup",
+    "integration",
+    "sync",
+    "cli"
+  ],
+  "author": "zentus",
   "license": "MIT",
   "dependencies": {
     "@octokit/rest": "^21.0.0",
