@@ -43,7 +43,7 @@ gitclick feature/SOME-1337-important-changes
 gitclick feature/SOME-1337 important changes
 ```
 ### Commands
-#### sync {branchNameOrTaskId} {freetext}
+#### sync {branchNameOrTaskId} {...freetext}
 - A pull request will be created, if it doesn't already exist
 - The pull request name and description will be set to the current name and description of the corresponding Clickup task
 - The pull request will be referenced in a comment in the Clickup task, if comment doesn't already exist
@@ -52,11 +52,11 @@ gitclick feature/SOME-1337 important changes
 ##### `branchNameOrTaskId` (Optional)  
 If provided, a new branch will be created with `GITCLICK_GITHUB_BASE_BRANCH` as its base branch.
   
-Task tags will be used to try to set a branch type (prefix).
-  
 If not provided, the current branch will be used.
   
 `branchNameOrTaskId` or the current branch must include a Task Custom ID of an existing task.
+  
+Task tags will be used to try to set a branch type (prefix).
   
 Example:
 ```bash
