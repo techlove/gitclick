@@ -10,6 +10,7 @@ const [command, ...args] = yarg._
 
 class CLI {
     constructor(overrides = {}) {
+        this.overrides = overrides
         this.command = overrides.command || command
         this.args = overrides.args || args
         this.flags = {
@@ -20,6 +21,21 @@ class CLI {
             env: overrides.env || process.env,
             base: overrides.base || this.flags.base
         })
+        this.commands = [
+            'sync'
+        ]
+        this.handleSyncShorthand()
+    }
+
+    handleSyncShorthand() {
+        if (this.command && !this.commands.includes(this.command)) {
+            this.args = [this.command, ...this.args]
+            this.command = 'sync'
+        }
+
+        if (!this.command) {
+            this.command = 'sync'
+        }
     }
 
     async setup() {
@@ -28,10 +44,6 @@ class CLI {
     }
 
     async handleCommand() {
-        if (!this.command) {
-            this.command = 'sync'
-        }
-
         if (this.command === 'sync') {
             this.lib.log('Syncing task to pull request...')
             const {
@@ -40,7 +52,7 @@ class CLI {
                 taskId,
                 isNewBranch,
                 error
-            } = await this.lib.getSyncData(args, true)
+            } = await this.lib.getSyncData(this.args, true)
 
             if (error === 'taskIdNotFound') {
                 return this.lib.log('Branch name must include a Custom Task ID at the start or after an optional branch type', true)
