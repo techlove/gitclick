@@ -1,6 +1,6 @@
 {
   "name": "@zentus/gitclick",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "lib and cli for github<->clickup integration",
   "main": "./src/lib.js",
   "scripts": {
