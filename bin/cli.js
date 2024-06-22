@@ -35,25 +35,22 @@ class CLI {
         if (this.command === 'sync') {
             console.log(chalk.bold('Syncing task to pull request...'))
             const {
+                branchName,
+                task,
                 taskId,
-                branchType: branchTypeFromArgs,
-                branchName: initBranchName,
-                isNewBranch
-            } = await this.lib.interpolateBranchName(this.args)
+                isNewBranch,
+                error
+            } = await this.lib.getSyncData(args)
 
-            if (!taskId) {
-                console.error(chalk.bold.red('Branch name must include a Custom Task ID at the start or after an optional branch type'))
-                return process.exit(1)
+            if (error === 'taskIdNotFound') {
+                return this.lib.log('Branch name must include a Custom Task ID at the start or after an optional branch type', true)
             }
 
-            console.log(chalk.bold(`Fetching task "${taskId}"...`))
-            const task = await this.lib.getTask(taskId)
+            this.lib.log(`Fetching task "${taskId}"...`)
 
-            if (!task) return this.lib.log(`Could not find a task with the Custom ID "${taskId}"`, true)
-
-            const branchType = branchTypeFromArgs || await this.lib.getTypeFromTaskTags(task)
-            const prependBranchType = Boolean(isNewBranch && !branchTypeFromArgs && branchType)
-            const branchName = prependBranchType ? `${branchType}/${initBranchName}` : initBranchName
+            if (error === 'taskNotFound') {
+                return this.lib.log(`Could not find a task with the Custom ID "${taskId}"`, true)
+            }
 
             if (isNewBranch) {
                 console.log(chalk.bold(`Checking out, and pulling base branch "${this.lib.data.github.base}" from origin remote...`))

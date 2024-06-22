@@ -37,22 +37,21 @@ class GitClick {
 
         this.branchTypes = [
             'feature',
+            'feat',
             'bugfix',
             'hotfix',
+            'fix',
+            'bug',
             'release',
             'docs',
             'refactor',
-            'performance',
             'chore',
-            'ci',
             'build',
-            'naming',
-            'style',
+            'ci',
             'perf',
-            'fix',
-            'bug',
-            'feat',
-            'ux',
+            'performance',
+            'style',
+            'naming',
             'test',
             'temp',
             'temporary'
@@ -64,13 +63,30 @@ class GitClick {
         }
     }
 
-    async getTypeFromTaskTags(task) {
+    getBranchTypeOverride(branchType) {
+        if (!branchType) return null
+
+        const overrides = [
+            ['bug', 'bugfix'],
+            ['fix', 'bugfix'],
+            ['feat', 'feature'],
+            ['perf', 'performance'],
+            ['temp', 'temporary']
+        ]
+
+        const foundOverride = overrides.find(([from, to]) => branchType.startsWith(from))
+        return foundOverride
+            ? foundOverride[1]
+            : branchType
+    }
+
+    async getBranchTypeFromTaskTags(task) {
         task = task || await this.getCurrentTask()
 
         if (!task) return null
 
         const tags = task.tags.map(tag => tag.name.toLowerCase())
-        const type = this.branchTypes.find(type => tags.includes(type))
+        const type = this.branchTypes.find(type => tags.some(tag => tag.includes(type) || type.includes(tag)))
         return type
     }
 
@@ -80,13 +96,17 @@ class GitClick {
             ? this.normalizeBranchName(args.join('-').trim())
             : await this.getCurrentBranchName()
 
-        const { branchType, separator } = this.getBranchType(branchName)
+        let { branchType, separator } = this.getBranchType(branchName)
+
+        const branchNameWithoutType = branchName.replace(branchType + separator, '')
+
         const taskId = this.extractTaskId(branchType
-            ? branchName.replace(branchType + separator, '')
+            ? branchNameWithoutType
             : branchName)
 
         return {
             isNewBranch,
+            branchNameWithoutType,
             taskId,
             branchType,
             separator,
@@ -112,13 +132,16 @@ class GitClick {
         }
     }
 
-    normalizeBranchName(suffix = '') {
-        return suffix
+    normalizeBranchName(branchName = '') {
+        branchName = branchName
             .trim()
             .toLowerCase()
             .replace(/[\s]/gi, '-')
             .replace(/[^a-z0-9\-\/]/gi, '')
+            .replace(/[\-]+/g, '-')
             .trim();
+        if (branchName.endsWith('-')) return branchName.slice(0, -1)
+        return branchName
     }
 
     async getCurrentBranchName() {
@@ -373,6 +396,40 @@ class GitClick {
                 }
             }
         )
+    }
+
+    async getSyncData(args) {
+        const {
+            taskId,
+            branchType: branchTypeFromArgs,
+            branchName: initBranchName,
+            branchNameWithoutType,
+            isNewBranch
+        } = await this.interpolateBranchName(args)
+
+        if (!taskId) return { error: 'taskIdNotFound' }
+
+        const task = await this.getTask(taskId)
+
+        if (!task) return { error: 'taskNotFound' }
+
+        const branchType = this.getBranchTypeOverride(branchTypeFromArgs || await this.getBranchTypeFromTaskTags(task))
+        const prependBranchType = Boolean(isNewBranch && !branchTypeFromArgs && branchType)
+        const branchNameFromBranchType = isNewBranch && branchType
+            ? `${branchType}/${branchNameWithoutType}`
+            : initBranchName
+        const branchName = prependBranchType
+            ? `${branchType}/${initBranchName}`
+            : branchNameFromBranchType
+
+        return {
+            branchName,
+            branchType,
+            task,
+            taskId,
+            isNewBranch
+        }
+
     }
 }
 
