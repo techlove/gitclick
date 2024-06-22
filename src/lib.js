@@ -22,7 +22,9 @@ class GitClick {
                 pullRequest: null
             },
             clickup: {
-                teamId: null
+                teamId: null,
+                task: null,
+                taskId: null
             }
         }
     }
@@ -76,7 +78,8 @@ class GitClick {
     }
 
     extractTaskId(branchName) {
-        return this.singleGroupMatch(branchName, /^([A-Z]+\-[\d]+).*$/g)
+        const taskId = this.singleGroupMatch(branchName, /^([A-Z]+\-[\d]+).*$/g)
+        return taskId
     }
 
     async getTeamId() {
@@ -98,6 +101,17 @@ class GitClick {
         } catch (error) {
             console.error(error)
         }
+    }
+
+    async getCurrentTask() {
+        if (this.data.clickup.task) return this.data.clickup.task
+        const branchName = await this.getBranchName()
+        const taskId = this.extractTaskId(branchName)
+        if (!taskId) return null
+        const task = await this.getTask(taskId)
+        this.data.clickup.taskId = taskId
+        this.data.clickup.task = task
+        return task
     }
 
     async pushBranchToRemote(branchName) {
@@ -152,15 +166,13 @@ class GitClick {
     }
 
     async createSyncedPullRequest(draft = true, dry = false) {
-        const branchName = await this.getBranchName()
-        const taskId = this.extractTaskId(branchName)
-        const task = await this.getTask(taskId)
         // const imageUrls = task.attachments
         //     .filter(attachment => attachment.mimetype.includes('image') && attachment.url)
         //     .map(attachment => attachment.url)
+        const task = await this.getCurrentTask()
 
         const bodyHeading = `### [${task.name}](${task.url})`
-        const bodyDescription = `#### ${taskId}\n${task.description}\n`
+        const bodyDescription = `#### ${task.custom_id}\n${task.description}\n`
         const bodyImages = ''
         // const bodyImages = imageUrls
         //     .map(imageUrl => `<img src="${imageUrl}" width="200"/>`)
@@ -201,7 +213,6 @@ class GitClick {
                 base: this.data.github.base,
                 head: `${org}:${branchName}`
             })
-
             const pullRequest = response.data[0]
             this.data.github.pullRequest = pullRequest
             return pullRequest
@@ -217,6 +228,22 @@ class GitClick {
             ...request,
             pull_number: pullRequest.number
         })
+    }
+
+    async createTaskComment(text, taskId) {
+        taskId = taskId || (await this.getCurrentTask()).id
+
+        await this.clickup.tasks.addComment(taskId, {
+            comment_text: text,
+            notify_all: false
+        })
+    }
+
+    async isTaskConnectedToPullRequest(task, pullRequest) {
+        if (!task || !pullRequest) throw new Error('isTaskConnectedToPullRequest expected task and pullRequest as arguments, got', JSON.stringify(task, pullRequest))
+        const res = await this.clickup.tasks.getComments(task.id)
+        const comments = res?.body?.comments || []
+        return comments.some(comment => comment.comment_text === pullRequest.html_url)
     }
 }
 

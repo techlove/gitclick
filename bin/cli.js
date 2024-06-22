@@ -63,11 +63,19 @@ class CLI {
             }
 
             const pullRequest = response?.data
+
+            const taskIsConnected = await this.lib.isTaskConnectedToPullRequest(task, pullRequest)
+
+            if (!taskIsConnected) {
+                await this.lib.createTaskComment(pullRequest.html_url)
+            }
+
             const b = chalk.bold
             const prLabel = chalk.bold.green(`Pull Request (#${pullRequest.number})`)
             const taskLabel = chalk.bold.blue(`Task (${task.custom_id})`)
 
             console.log(`\n${prLabel}\n${b(pullRequest.title)}\n${pullRequest?.html_url}\n\n${taskLabel}\n${b(task.name)}\n${task.url}`)
+            return
         }
     }
 }
