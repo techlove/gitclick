@@ -5,7 +5,7 @@ import path from 'node:path'
 import { exec } from 'node:child_process';
 
 class GitClick {
-    constructor({ env }) {
+    constructor({ env, base }) {
         this.dir = process.cwd()
         this.env = env
         this.octokit = new Octokit({
@@ -15,7 +15,7 @@ class GitClick {
         this.data = {
             github: {
                 org: null,
-                base: env.GITCLICK_GITHUB_BASE_BRANCH || 'main',
+                base: base || env.GITCLICK_GITHUB_BASE_BRANCH || 'main',
                 remoteUrl: null,
                 branchName: null,
                 repo: null,

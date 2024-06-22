@@ -7,17 +7,19 @@ import chalk from 'chalk'
 
 const yarg = yargs(process.argv.slice(2)).argv
 const [command, ...args] = yarg._
-const { help } = yarg
+const { help, base } = yarg
 
 class CLI {
     constructor() {
         this.command = command
         this.args = args
         this.flags = {
-            help
+            help,
+            base
         }
         this.lib = new GitClick({
-            env: process.env
+            env: process.env,
+            base: this.flags.base
         })
     }
 
