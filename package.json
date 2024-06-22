@@ -11,7 +11,8 @@
   },
   "type": "module",
   "bin": {
-    "gitclick": "bin/cli.js"
+    "gitclick": "bin/cli.js",
+    "glick": "bin/cli.js"
   },
   "repository": {
     "type": "git",
