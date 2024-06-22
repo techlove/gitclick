@@ -24,8 +24,7 @@ class CLI {
     }
 
     async setup() {
-        const teamId = await this.lib.getTeamId()
-
+        await this.lib.getTeamId()
         await this.handleCommand()
     }
 
