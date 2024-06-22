@@ -146,11 +146,11 @@ class GitClick {
         return orgAndRepo
     }
 
-    async createPullRequest({ title, body, draft }, dry = false) {
+    async createPullRequest({ title, body, draft }, dry = false, skipPush = false) {
         const branchName = await this.getBranchName()
         const { repo, org } = await this.getOrgAndRepo()
 
-        await this.pushBranchToRemote(branchName)
+        if (!skipPush) await this.pushBranchToRemote(branchName)
 
         const request = {
             owner: org,
@@ -165,7 +165,7 @@ class GitClick {
         return dry ? request : this.octokit.pulls.create(request)
     }
 
-    async createSyncedPullRequest(draft = true, dry = false) {
+    async createSyncedPullRequest(draft = true, dry = false, skipPush = false) {
         // const imageUrls = task.attachments
         //     .filter(attachment => attachment.mimetype.includes('image') && attachment.url)
         //     .map(attachment => attachment.url)
@@ -184,7 +184,7 @@ class GitClick {
             title: task.name,
             body,
             draft
-        }, dry)
+        }, dry, skipPush)
 
         return response
     }

@@ -43,13 +43,20 @@ class CLI {
                 return process.exit(1)
             }
 
+            console.log(chalk.bold(`Fetching task "${taskId}"...`))
             const task = await this.lib.getTask(taskId)
 
             if (isNewBranch) {
+                console.log(chalk.bold(`Checking out, and pulling base branch "${this.lib.data.github.base}" from origin remote...`))
                 await this.lib.checkoutBaseBranch()
+                console.log(chalk.bold(`Creating new branch "${branchName}"...`))
                 await this.lib.createBranch(branchName)
             }
 
+            console.log(chalk.bold(`Pushing branch to origin remote...`))
+            await this.lib.pushBranchToRemote(branchName)
+
+            console.log(chalk.bold(`Checking if pull request already exists...`))
             const existingPullRequest = await this.lib.getPullRequest()
 
             let response
@@ -59,7 +66,7 @@ class CLI {
                 response = await this.lib.updatePullRequest()
             } else {
                 console.log(chalk.bold('Creating a new pull request...'))
-                response = await this.lib.createSyncedPullRequest()
+                response = await this.lib.createSyncedPullRequest(true, false, true)
             }
 
             const pullRequest = response?.data
@@ -67,6 +74,7 @@ class CLI {
             const taskIsConnected = await this.lib.isTaskConnectedToPullRequest(task, pullRequest)
 
             if (!taskIsConnected) {
+                console.log(chalk.bold('Creating a pull request link comment in task...'))
                 await this.lib.createTaskComment(pullRequest.html_url)
             }
 
