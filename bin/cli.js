@@ -33,49 +33,47 @@ class CLI {
         }
 
         if (this.command === 'sync') {
-            console.log(chalk.bold('Syncing task to pull request...'))
+            this.lib.log('Syncing task to pull request...')
             const {
                 branchName,
                 task,
                 taskId,
                 isNewBranch,
                 error
-            } = await this.lib.getSyncData(args)
+            } = await this.lib.getSyncData(args, true)
 
             if (error === 'taskIdNotFound') {
                 return this.lib.log('Branch name must include a Custom Task ID at the start or after an optional branch type', true)
             }
-
-            this.lib.log(`Fetching task "${taskId}"...`)
 
             if (error === 'taskNotFound') {
                 return this.lib.log(`Could not find a task with the Custom ID "${taskId}"`, true)
             }
 
             if (isNewBranch) {
-                console.log(chalk.bold(`Checking out, and pulling base branch "${this.lib.data.github.base}" from origin remote...`))
+                this.lib.log(`Checking out, and pulling base branch "${this.lib.data.github.base}" from origin remote...`)
                 await this.lib.checkoutBaseBranch()
-                console.log(chalk.bold(`Creating new branch "${branchName}"...`))
+                this.lib.log(`Creating new branch "${branchName}"...`)
                 await this.lib.createBranch(branchName)
             }
 
-            console.log(chalk.bold(`Pushing branch to origin remote...`))
+            this.lib.log(`Pushing branch to origin remote...`)
             await this.lib.pushBranchToRemote(branchName)
 
-            console.log(chalk.bold(`Checking if pull request already exists...`))
+            this.lib.log(`Checking if pull request already exists...`)
             const existingPullRequest = await this.lib.getPullRequest()
 
             let response
 
             if (existingPullRequest) {
-                console.log(chalk.bold('Updating existing pull request...'))
+                this.lib.log('Updating existing pull request...')
                 if (this.flags.undraft) {
-                    console.log(chalk.bold('Undrafting pull request...'))
+                    this.lib.log('Undrafting pull request...')
                     await this.lib.undraftPullRequest(existingPullRequest)
                 }
                 response = await this.lib.updatePullRequest()
             } else {
-                console.log(chalk.bold('Creating a new pull request...'))
+                this.lib.log('Creating a new pull request...')
                 response = await this.lib.createSyncedPullRequest(!this.flags.undraft, false, true)
             }
 
@@ -84,7 +82,7 @@ class CLI {
             const taskIsConnected = await this.lib.isTaskConnectedToPullRequest(task, pullRequest)
 
             if (!taskIsConnected) {
-                console.log(chalk.bold('Creating a pull request link comment in task...'))
+                this.lib.log('Creating a pull request link comment in task...')
                 await this.lib.createTaskComment(pullRequest.html_url)
             }
 

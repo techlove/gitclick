@@ -398,7 +398,7 @@ class GitClick {
         )
     }
 
-    async getSyncData(args) {
+    async getSyncData(args, log = false) {
         const {
             taskId,
             branchType: branchTypeFromArgs,
@@ -408,6 +408,8 @@ class GitClick {
         } = await this.interpolateBranchName(args)
 
         if (!taskId) return { error: 'taskIdNotFound' }
+
+        if (log) this.log(`Fetching task "${taskId}"...`)
 
         const task = await this.getTask(taskId)
 
