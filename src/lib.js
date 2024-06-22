@@ -96,6 +96,10 @@ class GitClick {
             ? this.normalizeBranchName(args.join('-').trim())
             : await this.getCurrentBranchName()
 
+        if (!branchName) {
+            return this.log('The current working directory is not a repository, or ./.git is corrupted', true)
+        }
+
         let { branchType, separator } = this.getBranchType(branchName)
 
         const branchNameWithoutType = branchName.replace(branchType + separator, '')
@@ -146,12 +150,16 @@ class GitClick {
 
     async getCurrentBranchName() {
         if (this.data.github.branchName) return this.data.github.branchName
-        const HEAD = await fs.readFile(path.join(this.dir, '.git', 'HEAD'), 'utf8') || ''
-        const branchName = HEAD
-            .trim()
-            .split('ref: refs/heads/')[1] || ''
-        this.data.github.branchName = branchName
-        return branchName
+        try {
+            const HEAD = await fs.readFile(path.join(this.dir, '.git', 'HEAD'), 'utf8') || ''
+            const branchName = HEAD
+                .trim()
+                .split('ref: refs/heads/')[1] || ''
+            this.data.github.branchName = branchName
+            return branchName
+        } catch (error) {
+            return null
+        }
     }
 
     async createBranch(branchName) {
