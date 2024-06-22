@@ -38,6 +38,7 @@ gitclick SOME-1337-important-changes
 
 - A new branch will be created, based on `GITCLICK_GITHUB_BASE_BRANCH`
 - A new pull request (draft) will be created using data from the corresponding Clickup task
+- The pull request will be referenced in a comment in the Clickup task
 
 ### Sync current branch
 Make sure the current branch name is prefixed with a Custom ID, i.e "SOME-1337"
@@ -50,3 +51,6 @@ If an open pull request exists for this branch:
   
 Otherwise:
 - A new pull request (draft) will be created using data from the corresponding Clickup task
+
+Then, if not already done:
+- The pull request will be referenced in a comment in the Clickup task
