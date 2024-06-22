@@ -8,6 +8,17 @@ import chalk from 'chalk'
 const yarg = yargs(process.argv.slice(2)).argv
 const [command, ...args] = yarg._
 
+class Command {
+    constructor(CLI) {
+        this.CLI = CLI
+        this.sync = this.sync.bind(this)
+    }
+
+    async sync() {
+        return this.CLI.lib.handleSync(this.CLI.args, this.CLI.flags, true)
+    }
+}
+
 class CLI {
     constructor(overrides = {}) {
         this.overrides = overrides
@@ -21,9 +32,10 @@ class CLI {
             env: overrides.env || process.env,
             base: overrides.base || this.flags.base
         })
-        this.commands = [
-            'sync'
-        ]
+        this.commands = Object
+            .keys(new Command(this))
+            .filter(key => key !== 'CLI')
+
         this.handleSyncShorthand()
     }
 
@@ -44,9 +56,12 @@ class CLI {
     }
 
     async handleCommand() {
-        if (this.command === 'sync') {
-            this.lib.handleSync(this.args, this.flags, true)
+        const command = new Command(this)
+        const method = command[this.command] && command[this.command]
+        if (!method) {
+            this.lib.log(`${this.command} is not a valid command`, true)
         }
+        return method()
     }
 }
 
