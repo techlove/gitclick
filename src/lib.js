@@ -94,6 +94,7 @@ class GitClick {
         try {
             const { body } = await this.clickup.tasks.get(taskId, {
                 custom_task_ids: 'true',
+                include_markdown_description: 'true',
                 team_id: await this.getTeamId()
             })
 
@@ -172,13 +173,13 @@ class GitClick {
         const task = await this.getCurrentTask()
 
         const bodyHeading = `### [${task.name}](${task.url})`
-        const bodyDescription = `#### ${task.custom_id}\n${task.description}\n`
-        const bodyImages = ''
+        const bodyDescription = `#### ${task.custom_id}\n${task.markdown_description}\n`
+        // const bodyImages = ''
         // const bodyImages = imageUrls
         //     .map(imageUrl => `<img src="${imageUrl}" width="200"/>`)
         //     .join('\n')
         //     .trim()
-        const body = `${bodyHeading}\n${bodyDescription}\n\n${bodyImages}`
+        const body = `${bodyHeading}\n${bodyDescription}`
 
         const response = await this.createPullRequest({
             title: task.name,
