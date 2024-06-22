@@ -50,7 +50,7 @@ class GitClick {
         baseBranch = baseBranch || this.data.github.base
 
         return new Promise((resolve, reject) => {
-            exec(`git checkout ${baseBranch}`, (error, stdout, stderr) => {
+            exec(`git checkout ${baseBranch} && git pull origin`, (error, stdout, stderr) => {
                 if (error) return reject(error)
                 resolve(stdout)
             })
