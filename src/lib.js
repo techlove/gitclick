@@ -3,6 +3,7 @@ import { Octokit } from '@octokit/rest';
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { exec } from 'node:child_process';
+import { graphql } from "@octokit/graphql";
 
 class GitClick {
     constructor({ env, base }) {
@@ -11,6 +12,11 @@ class GitClick {
         this.octokit = new Octokit({
             auth: env.GITCLICK_GITHUB_PERSONAL_TOKEN
         })
+        this.octoKitGraphQL = graphql.defaults({
+            headers: {
+                authorization: 'token ' + env.GITCLICK_GITHUB_PERSONAL_TOKEN,
+            },
+        });
         this.clickup = new Clickup(env.GITCLICK_CLICKUP_PERSONAL_TOKEN);
         this.data = {
             github: {
@@ -323,6 +329,25 @@ class GitClick {
         const res = await this.clickup.tasks.getComments(task.id)
         const comments = res?.body?.comments || []
         return comments.some(comment => comment.comment_text === pullRequest.html_url)
+    }
+
+    async undraftPullRequest(pullRequest) {
+        pullRequest = pullRequest || await this.getPullRequest()
+        return this.octoKitGraphQL(`
+            mutation($data:MarkPullRequestReadyForReviewInput!) {
+                markPullRequestReadyForReview(input:$data) {
+                    pullRequest {
+                        title
+                    }
+                }
+            }
+        `,
+            {
+                data: {
+                    "pullRequestId": pullRequest.node_id
+                }
+            }
+        )
     }
 }
 

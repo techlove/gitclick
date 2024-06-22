@@ -7,15 +7,14 @@ import chalk from 'chalk'
 
 const yarg = yargs(process.argv.slice(2)).argv
 const [command, ...args] = yarg._
-const { help, base } = yarg
 
 class CLI {
     constructor(overrides = {}) {
         this.command = overrides.command || command
         this.args = overrides.args || args
-        this.flags = overrides.flags || {
-            help,
-            base
+        this.flags = {
+            base: overrides?.flags?.base || yarg.base,
+            undraft: overrides?.flags?.undraft || yarg.undraft
         }
         this.lib = new GitClick({
             env: overrides.env || process.env,
@@ -70,10 +69,14 @@ class CLI {
 
             if (existingPullRequest) {
                 console.log(chalk.bold('Updating existing pull request...'))
+                if (this.flags.undraft) {
+                    console.log(chalk.bold('Undrafting pull request...'))
+                    await this.lib.undraftPullRequest(existingPullRequest)
+                }
                 response = await this.lib.updatePullRequest()
             } else {
                 console.log(chalk.bold('Creating a new pull request...'))
-                response = await this.lib.createSyncedPullRequest(true, false, true)
+                response = await this.lib.createSyncedPullRequest(!this.flags.undraft, false, true)
             }
 
             const pullRequest = response?.data
