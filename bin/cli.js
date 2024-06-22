@@ -10,16 +10,16 @@ const [command, ...args] = yarg._
 const { help, base } = yarg
 
 class CLI {
-    constructor() {
-        this.command = command
-        this.args = args
-        this.flags = {
+    constructor(overrides = {}) {
+        this.command = overrides.command || command
+        this.args = overrides.args || args
+        this.flags = overrides.flags || {
             help,
             base
         }
         this.lib = new GitClick({
-            env: process.env,
-            base: this.flags.base
+            env: overrides.env || process.env,
+            base: overrides.base || this.flags.base
         })
     }
 
@@ -36,17 +36,23 @@ class CLI {
 
         if (this.command === 'sync') {
             console.log(chalk.bold('Syncing task to pull request...'))
-            const branchName = args[0] || await this.lib.getBranchName() || ''
-            const isNewBranch = branchName === args[0]
-            const taskId = this.lib.extractTaskId(branchName)
+            const {
+                taskId,
+                branchType: branchTypeFromArgs,
+                branchName: initBranchName,
+                isNewBranch
+            } = await this.lib.interpolateBranchName(this.args)
 
-            if (branchName && !taskId) {
-                console.error(chalk.bold.red('Branch name must start with a Custom Task ID, i.e "SOME-1337"'))
+            if (!taskId) {
+                console.error(chalk.bold.red('Branch name must include a Custom Task ID at the start or after an optional branch type'))
                 return process.exit(1)
             }
 
             console.log(chalk.bold(`Fetching task "${taskId}"...`))
             const task = await this.lib.getTask(taskId)
+            const branchType = branchTypeFromArgs || await this.lib.getTypeFromTaskTags(task)
+            const prependBranchType = Boolean(isNewBranch && !branchTypeFromArgs && branchType)
+            const branchName = prependBranchType ? `${branchType}/${initBranchName}` : initBranchName
 
             if (isNewBranch) {
                 console.log(chalk.bold(`Checking out, and pulling base branch "${this.lib.data.github.base}" from origin remote...`))

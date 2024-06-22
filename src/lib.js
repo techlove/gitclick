@@ -27,9 +27,85 @@ class GitClick {
                 taskId: null
             }
         }
+
+        this.branchTypes = [
+            'hotfix',
+            'fix',
+            'bug',
+            'feature',
+            'feat',
+            'perf',
+            'naming',
+            'build',
+            'chore',
+            'docs',
+            'ci',
+            'refactor',
+            'style',
+            'test',
+            'temp',
+        ]
+
+        this.regex = {
+            startsWithTaskId: /^([a-zA-Z]+\-[\d]+).*$/g,
+            isTaskId: /^([a-zA-Z]+\-[\d]+)$/g
+        }
     }
 
-    async getBranchName() {
+    async getTypeFromTaskTags(task) {
+        task = task || await this.getCurrentTask()
+        const tags = task.tags.map(tag => tag.name.toLowerCase())
+        const type = this.branchTypes.find(type => tags.includes(type))
+        return type
+    }
+
+    async interpolateBranchName(args) {
+        const branchName = this.normalizeBranchName(args[0]
+            ? args.join('-').trim()
+            : await this.getCurrentBranchName())
+
+        const { branchType, separator } = this.getBranchType(branchName)
+        const taskId = this.extractTaskId(branchType
+            ? branchName.replace(branchType + separator, '')
+            : branchName)
+
+        return {
+            isNewBranch: Boolean(args[0]),
+            taskId,
+            branchType,
+            separator,
+            branchName
+        }
+    }
+
+    getBranchType(branchName) {
+        const separatorIndex = branchName.indexOf('/')
+        const branchType = (
+            (separatorIndex >= 0 && branchName.slice(0, separatorIndex)) ||
+            this.branchTypes.find(branchType => branchName.startsWith(branchType))
+        )
+
+        if (!branchType) return {
+            branchType: null,
+            separator: null
+        }
+
+        return {
+            branchType: branchType,
+            separator: branchName.replace(branchType, '')[0]
+        }
+    }
+
+    normalizeBranchName(suffix = '') {
+        return suffix
+            .trim()
+            .toLowerCase()
+            .replace(/[\s]/gi, '-')
+            .replace(/[^a-z0-9\-\/]/gi, '')
+            .trim();
+    }
+
+    async getCurrentBranchName() {
         if (this.data.github.branchName) return this.data.github.branchName
         const HEAD = await fs.readFile(path.join(this.dir, '.git', 'HEAD'), 'utf8') || ''
         const branchName = HEAD
@@ -78,8 +154,8 @@ class GitClick {
     }
 
     extractTaskId(branchName) {
-        const taskId = this.singleGroupMatch(branchName, /^([A-Z]+\-[\d]+).*$/g)
-        return taskId
+        const taskId = this.singleGroupMatch(branchName, this.regex.startsWithTaskId)
+        return taskId?.toUpperCase()
     }
 
     async getTeamId() {
@@ -91,6 +167,7 @@ class GitClick {
     }
 
     async getTask(taskId) {
+        taskId = taskId.toUpperCase()
         try {
             const { body } = await this.clickup.tasks.get(taskId, {
                 custom_task_ids: 'true',
@@ -106,7 +183,7 @@ class GitClick {
 
     async getCurrentTask() {
         if (this.data.clickup.task) return this.data.clickup.task
-        const branchName = await this.getBranchName()
+        const branchName = await this.getCurrentBranchName()
         const taskId = this.extractTaskId(branchName)
         if (!taskId) return null
         const task = await this.getTask(taskId)
@@ -116,7 +193,7 @@ class GitClick {
     }
 
     async pushBranchToRemote(branchName) {
-        const _branchName = branchName || await this.getBranchName()
+        const _branchName = branchName || await this.getCurrentBranchName()
         return new Promise((resolve, reject) => {
             exec(`git push --set-upstream origin ${_branchName}`, (error, stdout, stderr) => {
                 if (error) return reject(error)
@@ -148,7 +225,7 @@ class GitClick {
     }
 
     async createPullRequest({ title, body, draft }, dry = false, skipPush = false) {
-        const branchName = await this.getBranchName()
+        const branchName = await this.getCurrentBranchName()
         const { repo, org } = await this.getOrgAndRepo()
 
         if (!skipPush) await this.pushBranchToRemote(branchName)
@@ -206,7 +283,7 @@ class GitClick {
         try {
             if (this.data.github.pullRequest) return this.data.github.pullRequest
             const { repo, org } = await this.getOrgAndRepo()
-            const branchName = await this.getBranchName()
+            const branchName = await this.getCurrentBranchName()
             const response = await this.octokit.rest.pulls.list({
                 owner: org,
                 repo,
