@@ -100,9 +100,11 @@ With Task Custom ID only
 ```bash
 gitclick sync SOME-1337
 # Branch name will be "some-1337"
-# Task tags will be used to try to set a branch types (prefix)
+# Task tags will be used to try to set a branch type (prefix)
+
 # If the task "SOME-1337" has the tag "bug" on it
 # Branch name will be "bugfix/some-1337"
+
 # If the task "SOME-1337" has the tag "feature" on it
 # Branch name will be "feature/some-1337"
 ```
