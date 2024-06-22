@@ -1,15 +1,12 @@
 {
-  "name": "gitclick",
-  "version": "0.0.1",
+  "name": "@zentus/gitclick",
+  "version": "0.0.0",
   "description": "lib and cli for github<->clickup integration",
   "main": "./src/lib.js",
   "scripts": {
     "link": "npm link"
   },
   "type": "module",
-  "engines": {
-    "node": "v18.*.*"
-  },
   "bin": {
     "gitclick": "bin/cli.js"
   },
