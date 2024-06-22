@@ -26,7 +26,7 @@ export GITCLICK_GITHUB_BASE_BRANCH="your_base_branch" # default: "main"
 If you added them to a shell rc file, restart your terminal to start using the program
 
 ## Use
-### Create a new branch, and pull request based on a Clickup task
+### Sync new branch
 Prefix the branch name with a Custom ID, i.e "SOME-1337"
 ```bash
 gitclick SOME-1337-important-changes
