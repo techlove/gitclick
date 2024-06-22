@@ -15,7 +15,7 @@ class GitClick {
         this.data = {
             github: {
                 org: null,
-                base: env.GITCLICK_GITHUB_REPO_BASE || 'main',
+                base: env.GITCLICK_GITHUB_BASE_BRANCH || 'main',
                 remoteUrl: null,
                 branchName: null,
                 repo: null,
