@@ -433,6 +433,68 @@ class GitClick {
         }
 
     }
+
+    async handleSync(args, flags, log = false) {
+        if (log) this.log('Syncing task to pull request...')
+        const {
+            branchName,
+            task,
+            taskId,
+            isNewBranch,
+            error
+        } = await this.getSyncData(args, true)
+
+        if (error === 'taskIdNotFound') {
+            return log && this.log('Branch name must include a Custom Task ID at the start or after an optional branch type', true)
+        }
+
+        if (error === 'taskNotFound') {
+            return log && this.log(`Could not find a task with the Custom ID "${taskId}"`, true)
+        }
+
+        if (isNewBranch) {
+            if (log) this.log(`Checking out, and pulling base branch "${this.data.github.base}" from origin remote...`)
+            await this.checkoutBaseBranch()
+            if (log) this.log(`Creating new branch "${branchName}"...`)
+            await this.createBranch(branchName)
+        }
+
+        if (log) this.log(`Pushing branch to origin remote...`)
+        await this.pushBranchToRemote(branchName)
+
+        if (log) this.log(`Checking if pull request already exists...`)
+        const existingPullRequest = await this.getPullRequest()
+
+        let response
+
+        if (existingPullRequest) {
+            if (log) this.log('Updating existing pull request...')
+            if (flags.undraft) {
+                if (log) this.log('Undrafting pull request...')
+                await this.undraftPullRequest(existingPullRequest)
+            }
+            response = await this.updatePullRequest()
+        } else {
+            if (log) this.log('Creating a new pull request...')
+            response = await this.createSyncedPullRequest(!flags.undraft, false, true)
+        }
+
+        const pullRequest = response?.data
+
+        const taskIsConnected = await this.isTaskConnectedToPullRequest(task, pullRequest)
+
+        if (!taskIsConnected) {
+            if (log) this.log('Creating a pull request link comment in task...')
+            await this.createTaskComment(pullRequest.html_url)
+        }
+
+        const b = chalk.bold
+        const prLabel = chalk.bold.green(`Pull Request (#${pullRequest.number})`)
+        const taskLabel = chalk.bold.blue(`Task (${task.custom_id})`)
+
+        if (log) console.log(`\n${prLabel}\n${b(pullRequest.title)}\n${pullRequest?.html_url}\n\n${taskLabel}\n${b(task.name)}\n${task.url}`)
+        return
+    }
 }
 
 export default GitClick
