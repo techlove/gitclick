@@ -317,7 +317,7 @@ class GitClick {
         return dry ? request : this.octokit.pulls.create(request)
     }
 
-    async normalizePullRequestBody(body = '') {
+    normalizePullRequestBody(body = '') {
         return body
             .replace(this.regex.markdownImageEmbed, '')
             .trim()
