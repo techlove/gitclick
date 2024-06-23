@@ -169,6 +169,21 @@ class GitClick {
         }
     }
 
+    async checkIfBranchExistsOnRemote(branchName) {
+        const { org, repo } = await this.getOrgAndRepo()
+        const response = await this.octokit.git.getRef({
+            owner: org,
+            repo,
+            ref: 'heads/dev'
+        }).catch(e => e)
+        const notFound = response?.response?.data?.status === 404
+        // console.log({
+        //     a: response.data,
+        //     // b: 
+        // })
+        return !notFound
+    }
+
     async checkIfBranchExists(branchName) {
         return new Promise((resolve, reject) => {
             exec(`git branch --all --list '${branchName}'`, (error, stdout, stderr) => {
@@ -468,6 +483,12 @@ class GitClick {
         if (log) this.log(`Syncing branch ${chalk.gray(branchName)} in ${chalk.gray(`${org}/${repo}`)}...`)
 
         const branchExists = await this.checkIfBranchExists(branchName)
+        const baseBranchExists = await this.checkIfBranchExistsOnRemote(this.data.github.base)
+
+        if (!baseBranchExists) {
+            console.log({ baseBranchExists })
+            return
+        }
 
         if (error === 'taskIdNotFound') {
             return log && this.log('Branch name must include a Custom Task ID at the start or after an optional branch type', true)
