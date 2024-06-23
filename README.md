@@ -172,7 +172,7 @@ Because everything that can be automated should be automated.
   
 I got tired of manually copy pasting names and descriptions, maybe you are too.  
   
-If I'm automating something for my own use, and I might as well share it, because others may want to do the same thing, however specific the application.  
+If I'm automating something for my own use, I might as well share it, because others may want to do the same thing, however specific the application.  
   
 If you're using **Clickup** you might find this tool useful, if not, you've wasted a lot of time reading all the way to this point of the README and should probably go do something else.  
   
