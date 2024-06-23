@@ -158,15 +158,9 @@ gitclick feature/SOME-1337 important changes
 The same commands, but non-aliased:
 ```
 gitclick sync
-gitclick sync
-gitclick sync SOME-1337
 gitclick sync SOME-1337
 gitclick sync feature/SOME-1337
-gitclick sync feature/SOME-1337
-gitclick sync SOME-1337-important-changes
 gitclick sync SOME-1337-important-changes
 gitclick sync bug/SOME-1337-important-changes
-gitclick sync bug/SOME-1337-important-changes
-gitclick sync feature/SOME-1337 important changes
 gitclick sync feature/SOME-1337 important changes
 ```
