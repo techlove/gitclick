@@ -11,7 +11,13 @@ class GitClick {
         this.dir = process.cwd()
         this.env = env
         this.octokit = new Octokit({
-            auth: env.GITCLICK_GITHUB_PERSONAL_TOKEN
+            auth: env.GITCLICK_GITHUB_PERSONAL_TOKEN,
+            log: {
+                error: () => { },
+                warn: () => { },
+                info: () => { },
+                debug: () => { }
+            }
         })
         this.octoKitGraphQL = graphql.defaults({
             headers: {
@@ -163,9 +169,18 @@ class GitClick {
         }
     }
 
-    async createBranch(branchName) {
+    async checkIfBranchExists(branchName) {
         return new Promise((resolve, reject) => {
-            exec(`git checkout -b ${branchName}`, (error, stdout, stderr) => {
+            exec(`git branch --all --list '${branchName}'`, (error, stdout, stderr) => {
+                if (error) return reject(error)
+                resolve(stdout.includes(branchName))
+            })
+        })
+    }
+
+    async checkoutBranch(branchName, isNew = true) {
+        return new Promise((resolve, reject) => {
+            exec(`git checkout${isNew ? ' -b' : ''} ${branchName}`, (error, stdout, stderr) => {
                 if (error) return reject(error)
                 resolve(stdout)
             })
@@ -416,7 +431,7 @@ class GitClick {
 
         if (!taskId) return { error: 'taskIdNotFound' }
 
-        if (log) this.log(`Fetching task "${taskId}"...`)
+        if (log) this.log(`Fetching task ${chalk.gray(taskId)}...`)
 
         const task = await this.getTask(taskId)
 
@@ -451,19 +466,26 @@ class GitClick {
             error
         } = await this.getSyncData(args, true)
 
+        const branchExists = await this.checkIfBranchExists(branchName)
+
         if (error === 'taskIdNotFound') {
             return log && this.log('Branch name must include a Custom Task ID at the start or after an optional branch type', true)
         }
 
         if (error === 'taskNotFound') {
-            return log && this.log(`Could not find a task with the Custom ID "${taskId}"`, true)
+            return log && this.log(`Could not find a task with the Custom ID ${chalk.gray(taskId)}`, true)
         }
 
         if (isNewBranch) {
-            if (log) this.log(`Checking out, and pulling base branch "${this.data.github.base}" from origin remote...`)
+            if (log) this.log(`Checking out, and pulling base branch ${chalk.gray(this.data.github.base)} from origin remote...`)
             await this.checkoutBaseBranch()
-            if (log) this.log(`Creating new branch "${branchName}"...`)
-            await this.createBranch(branchName)
+            if (log) this.log(`Checking out ${branchExists ? 'existing' : 'new'} branch ${chalk.gray(branchName)}...`)
+            await this.checkoutBranch(branchName, !branchExists)
+            if (log) this.log(`Pushing branch to origin remote...`)
+            await this.pushBranchToRemote(branchName)
+
+            this.log(chalk.blue(`Commit something in ${chalk.gray(branchName)}, then run ${chalk.green('glick')} to create a Pull Request`))
+            return
         }
 
         if (log) this.log(`Pushing branch to origin remote...`)
@@ -482,8 +504,21 @@ class GitClick {
             }
             response = await this.updatePullRequest()
         } else {
-            if (log) this.log('Creating a new pull request...')
-            response = await this.createSyncedPullRequest(!flags.undraft, false, true)
+            if (log) this.log('Trying to create a new pull request...')
+            response = await this.createSyncedPullRequest(!flags.undraft, false, true).catch(e => e)
+        }
+
+        const noChanges = (
+            response?.response?.data?.message === 'Validation Failed' &&
+            response?.response?.data?.errors?.some(error => error?.message?.startsWith('No commits between'))
+        )
+
+        if (noChanges) {
+            if (log) {
+                this.log(chalk.blue(`Did not create Pull Request, because ${chalk.gray(branchName)} is identical to ${chalk.gray(this.data.github.base)}`))
+                this.log(chalk.blue(`Commit something in ${chalk.gray(branchName)}, then run ${chalk.green('glick')} to create a Pull Request`))
+            }
+            return
         }
 
         const pullRequest = response?.data
@@ -500,7 +535,6 @@ class GitClick {
         const taskLabel = chalk.bold.blue(`Task (${task.custom_id})`)
 
         if (log) console.log(`\n${prLabel}\n${b(pullRequest.title)}\n${pullRequest?.html_url}\n\n${taskLabel}\n${b(task.name)}\n${task.url}`)
-        return
     }
 }
 
