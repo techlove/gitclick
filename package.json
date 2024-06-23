@@ -6,8 +6,7 @@
   "scripts": {
     "link": "npm link",
     "publish:github": "npm publish --registry https://npm.pkg.github.com",
-    "publish:npm": "npm publish --access=public --registry https://registry.npmjs.org",
-    "publish": "npm run publish:github && npm run publish:npm"
+    "publish:npm": "npm publish --access=public --registry https://registry.npmjs.org"
   },
   "type": "module",
   "bin": {
