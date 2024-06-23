@@ -1,9 +1,9 @@
 # [@zentus/gitclick](https://github.com/zentus/gitclick)
-A CLI tool for **Clickup** **Task** to **GitHub** **Pull Request** syncing and cross-referencing.
+## A CLI tool for **Clickup** **Task** to **GitHub** **Pull Request** syncing and cross-referencing.
 
 Slightly opinionated.
 
-### Why do I need this?
+## Why do I need this?
 I got tired of doing it manually, maybe you are too.
 
 ## Installation
@@ -29,51 +29,57 @@ export GITCLICK_GITHUB_PERSONAL_TOKEN="your_github_token"
 export GITCLICK_GITHUB_BASE_BRANCH="your_base_branch" # (optional) default: "main"
 ```
 
-If you added them to a shell rc file, restart your terminal to start using the program.
+###### If you added them to a shell rc file, restart your terminal to start using the program.
 
 ## Usage
-### Sync current **Branch**  
+##### Sync current **Branch**:  
 ```bash
 glick
 ```
 
-### Sync current **Branch** and undraft **Pull Request**
+##### Sync current **Branch** and undraft **Pull Request**:
 ```bash
 glick --undraft
 ```
 
-### Sync new **Branch**
+##### Sync new **Branch**:
 ```bash
 glick SOME-1337
 ```
 **Task** **Tag**s will be used to try to set a `branchType` prefix.
   
-If the **Task** with **Task** **Custom ID** `SOME-1337` has the **Task** **Tag** `bug`, the **Branch** **Name** will be `bugfix/some-1337`
+###### If the **Task** with **Task** **Custom ID** `SOME-1337` has the **Task** **Tag** `bug`, the **Branch** **Name** will be `bugfix/some-1337`.
   
-If the **Task** with **Task** **Custom ID** `SOME-1337` has the **Task** **Tag** `Feature`, the **Branch** **Name** will be `feature/some-1337`
+###### If the **Task** with **Task** **Custom ID** `SOME-1337` has the **Task** **Tag** `Feature`, the **Branch** **Name** will be `feature/some-1337`.
 
-If no matching **Task** **Tag**s are found, the **Branch** **Name** will be `some-1337`.  
+###### If no matching **Task** **Tag**s are found, the **Branch** **Name** will be `some-1337`.  
 
 ### Sync new **Branch** as non-draft
 ```bash
 glick SOME-1337 --undraft
 ```
   
-### Commands
-#### `gitclick sync`
-- A **Pull Request** will be created, if it doesn't already exist.
-- The **Pull Request** **Title** will be set to the current **Task** **Name**, and the **Pull Request** **Body** will include a link to the **Task** and the current **Markdown Description** of the **Task** corresponding to either the current **Branch** or a new **Branch** to be created.
-- The **Pull Request** **URL** will be referenced in a **Task** **Comment** in the **Task**, if such a **Task** **Comment** doesn't already exist in the **Task**.
+## Commands
+### `gitclick sync`
+- A **Pull Request** will be created, if it doesn't already exist  
   
-#### Arguments
-##### 1. Create new **Branch** (Optional)
-Format: `{branchType}{separator}{taskId}{freetext}`  
+- The **Pull Request** **Title** will be set to the current **Task** **Name**  
   
-If not provided, the current **Branch** will be used. The current **Branch** must include a **Task** **Custom ID** of an existing **Task**.
+- The **Pull Request** **Body** will be set to include a link to the **Task**  
   
-If provided, a new **Branch** will be created with `GITCLICK_GITHUB_BASE_BRANCH` as its **Base** **Branch**. At least subargument `taskId` must be included.
+- The **Pull Request** **Body** will be set to include the current **Markdown Description** of the **Task**  
+    
+- A **Task** **Comment** will be created in the **Task**, containing the **Pull Request** **URL**, if such a **Task** **Comment** doesn't already exist in the **Task**  
   
-##### Subarguments
+### Arguments
+#### 1. Create new **Branch** (Optional)
+##### Format: `{branchType}{separator}{taskId}{freetext}`  
+  
+###### If not provided, the current **Branch** will be used. The current **Branch** must include a **Task** **Custom ID** of an existing **Task**.
+  
+###### If provided, a new **Branch** will be created with `GITCLICK_GITHUB_BASE_BRANCH` as its **Base** **Branch**. At least subargument `taskId` must be included.
+  
+#### Subarguments
   
 ###### `branchType` (Optional)  
   
@@ -91,62 +97,44 @@ The **Task** **Custom ID** of an existing **Task**.
   
 A **Branch** **Name** suffix. May include spaces, as it will be normalized.
   
-#### Example
-```bash
-gitclick sync SOME-1337
-
-# gitclick sync feat/SOME-1337 do very important things
-# Branch Name will be "feature/some-1337-do-very-important-things"
-```
-
-##### Flags
+#### Flags
 ###### `undraft` (Optional)  
-If provided, the **Pull Request** will be set to `Ready for review` 
+If provided, the **Pull Request** will be set to `Ready for review`.  
 
-(Note: If you want to set a `Ready for review` **Pull Request** back to `Draft`, you currently need to do it manually in **GitHub** due to **GitHub** **API** limitations)
-  
-```bash
-gitclick sync SOME-1337 --undraft
-gitclick sync --undraft
-```
+###### Note: If you want to set a `Ready for review` **Pull Request** back to `Draft`, you currently need to do it manually in **GitHub** due to **GitHub** **API** limitations.
 
 ###### `base` (Optional)
-If provided, will override `GITCLICK_GITHUB_BASE_BRANCH`
-  
-```bash
-gitclick sync SOME-1337 --base mybasebranch
-gitclick sync --base mybasebranch
-```
+If provided, will override `GITCLICK_GITHUB_BASE_BRANCH`.
 
-## More Examples
+#### Examples
 
-With suffixed **Branch** **Name**
+##### With suffixed **Branch** **Name**:
 ```bash
 glick SOME-1337-important-changes
-# Branch Name will be "some-1337-important-changes"
 ```
+###### **Branch** **Name** will be `some-1337-important-changes`.
 
-With suffixed **Branch** **Name** as free text
+##### With suffixed **Branch** **Name** as free text:
 ```bash
 glick SOME-1337 lots of stuff
-# Branch Name will be "some-1337-lots-of-stuff"
 ```
+###### **Branch** **Name** will be `some-1337-lots-of-stuff`.
 
-With specified common `branchType`
+##### With specified common `branchType`:
 ```bash
 glick bug/SOME-1337 important changes
-# Branch Name will be "bugfix/some-1337-important-changes"
-# Overrides any branchType that could be determined from Task Tags
 ```
+###### Overrides any `branchType` that could be determined from **Task** **Tag**s
+###### **Branch** **Name** will be will be `bugfix/some-1337-important-changes`.
 
-With specified uncommon `branchType`
+##### With specified uncommon `branchType`:
 ```bash
 glick what/SOME-1337 are you sure
-# Branch Name will be "what/some-1337-are-you-sure"
-# Overrides any branchType that could be determined from Task Tags
 ```
+###### **Branch** **Name** will be will be `what/some-1337-are-you-sure`.
+###### Overrides any `branchType` that could be determined from **Task Tag**s.
 
-### Shorthand Aliases
+## Shorthand Aliases
 `glick` is a bundled alias for `gitclick`
 
 If a valid command is not passed as the first argument, it will default to `sync`
