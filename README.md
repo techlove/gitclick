@@ -1,11 +1,6 @@
 # [@zentus/gitclick](https://github.com/zentus/gitclick)
 ## A CLI tool for **Clickup** **Task** to **GitHub** **Pull Request** syncing and cross-referencing.
 
-Slightly opinionated.
-
-## Why do I need this?
-I got tired of doing it manually, maybe you are too.
-
 ## Installation
 ```bash
 npm install -g @zentus/gitclick
@@ -32,19 +27,19 @@ export GITCLICK_GITHUB_BASE_BRANCH="your_base_branch" # (optional) default: "mai
 ###### If you added them to a shell rc file, restart your terminal to start using the program.
 
 ## Usage
-##### Sync current **Branch**:  
+##### Sync current **Branch** (using `glick` alias):  
 ```bash
 glick
 ```
 
 ##### Sync current **Branch** and undraft **Pull Request**:
 ```bash
-glick --undraft
+gitclick sync --undraft
 ```
 
 ##### Sync new **Branch**:
 ```bash
-glick SOME-1337
+gitclick sync SOME-1337
 ```
 **Task** **Tag**s will be used to try to set a `branchType` prefix.
   
@@ -56,7 +51,7 @@ glick SOME-1337
 
 ### Sync new **Branch** as non-draft
 ```bash
-glick SOME-1337 --undraft
+gitclick sync SOME-1337 --undraft
 ```
   
 ## Commands
@@ -164,3 +159,23 @@ gitclick sync SOME-1337-important-changes
 gitclick sync bug/SOME-1337-important-changes
 gitclick sync feature/SOME-1337 important changes
 ```
+## State
+Slightly opinionated.
+
+Currently the only command is `gitclick sync`, additional commands may be added later.
+
+Assumes the format of your **Task** **Custom ID** matches `/^([a-zA-Z]+\-[\d]+)$/g`.
+
+### Why do I need this?
+###### Short answer: You probably don't
+Because everything that can be automated should be automated. 
+  
+I got tired of manually copy pasting names and descriptions, maybe you are too.  
+  
+If I'm automating something for my own use, and I might as well share it, because others may want to do the same thing, however specific the application.  
+  
+If you're using **Clickup** you might find this tool useful, if not, you've wasted a lot of time reading all the way to this point of the README and should probably go do something else.  
+  
+
+## License
+[@zentus/gitclick](https://github.com/zentus/gitclick) is open source software [licensed as MIT](https://github.com/zentus/gitclick/blob/main/LICENSE).
