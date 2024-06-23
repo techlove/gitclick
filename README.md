@@ -135,9 +135,9 @@ glick what/SOME-1337 are you sure
 ###### Overrides any `branchType` that could be determined from **Task Tag**s.
 
 ## Shorthand Aliases
-`glick` is a bundled alias for `gitclick`
+`glick` is a bundled alias for `gitclick`.
 
-If a valid command is not passed as the first argument, it will default to `sync`
+If a valid command is not passed as the first argument, it will default to `sync`.
   
 The following commands are all valid aliases for the `sync` command:
 ```bash
