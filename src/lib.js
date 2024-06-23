@@ -59,7 +59,8 @@ class GitClick {
 
         this.regex = {
             startsWithTaskId: /^([a-zA-Z]+\-[\d]+).*$/g,
-            isTaskId: /^([a-zA-Z]+\-[\d]+)$/g
+            isTaskId: /^([a-zA-Z]+\-[\d]+)$/g,
+            markdownImageEmbed: /\!\[.*\]\(.*\)/gm
         }
     }
 
@@ -302,22 +303,20 @@ class GitClick {
         return dry ? request : this.octokit.pulls.create(request)
     }
 
+    async normalizePullRequestBody(body = '') {
+        return body
+            .replace(this.regex.markdownImageEmbed, '')
+            .trim()
+    }
+
     async createSyncedPullRequest(draft = true, dry = false, skipPush = false) {
-        // const imageUrls = task.attachments
-        //     .filter(attachment => attachment.mimetype.includes('image') && attachment.url)
-        //     .map(attachment => attachment.url)
         const task = await this.getCurrentTask()
 
         if (!task) return null
 
         const bodyHeading = `### [${task.name}](${task.url})`
         const bodyDescription = `#### ${task.custom_id}\n${task.markdown_description}\n`
-        // const bodyImages = ''
-        // const bodyImages = imageUrls
-        //     .map(imageUrl => `<img src="${imageUrl}" width="200"/>`)
-        //     .join('\n')
-        //     .trim()
-        const body = `${bodyHeading}\n${bodyDescription}`
+        const body = this.normalizePullRequestBody(`${bodyHeading}\n${bodyDescription}`)
 
         const response = await this.createPullRequest({
             title: task.name,
