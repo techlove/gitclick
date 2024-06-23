@@ -110,36 +110,36 @@ If provided, will override `GITCLICK_GITHUB_BASE_BRANCH`.
 
 ##### With suffixed **Branch** **Name**:
 ```bash
-glick SOME-1337-important-changes
+gitclick sync SOME-1337-important-changes
 ```
 ###### **Branch** **Name** will be `some-1337-important-changes`.
 
 ##### With suffixed **Branch** **Name** as free text:
 ```bash
-glick SOME-1337 lots of stuff
+gitclick sync SOME-1337 lots of stuff
 ```
 ###### **Branch** **Name** will be `some-1337-lots-of-stuff`.
 
 ##### With specified common `branchType`:
 ```bash
-glick bug/SOME-1337 important changes
+gitclick sync bug/SOME-1337 important changes
 ```
 ###### Overrides any `branchType` that could be determined from **Task** **Tag**s
 ###### **Branch** **Name** will be will be `bugfix/some-1337-important-changes`.
 
 ##### With specified uncommon `branchType`:
 ```bash
-glick what/SOME-1337 are you sure
+gitclick sync what/SOME-1337 are you sure
 ```
 ###### **Branch** **Name** will be will be `what/some-1337-are-you-sure`.
 ###### Overrides any `branchType` that could be determined from **Task Tag**s.
 
 ## Shorthand Aliases
-`glick` is a bundled alias for `gitclick`.
-
-If a valid command is not passed as the first argument, it will default to `sync`.
+`gitclick` is an alias for `gitclick sync`.  
   
-The following commands are all valid aliases for the `sync` command:
+`glick` is an alias for `gitclick`.  
+  
+The following commands are all valid aliased `gitclick sync` commands:
 ```bash
 glick
 gitclick
