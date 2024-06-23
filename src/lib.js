@@ -32,7 +32,8 @@ class GitClick {
                 remoteUrl: null,
                 branchName: null,
                 repo: null,
-                pullRequest: null
+                pullRequest: null,
+                baseRef: null
             },
             clickup: {
                 teamId: null,
@@ -174,13 +175,14 @@ class GitClick {
         const response = await this.octokit.git.getRef({
             owner: org,
             repo,
-            ref: 'heads/dev'
+            ref: `heads/${branchName}`
         }).catch(e => e)
-        const notFound = response?.response?.data?.status === 404
-        // console.log({
-        //     a: response.data,
-        //     // b: 
-        // })
+        const notFound = response?.response?.status === 404
+
+        if (!notFound) {
+            this.data.github.baseRef = response.data
+        }
+
         return !notFound
     }
 
@@ -482,14 +484,6 @@ class GitClick {
         } = await this.getSyncData(args, true)
         if (log) this.log(`Syncing branch ${chalk.gray(branchName)} in ${chalk.gray(`${org}/${repo}`)}...`)
 
-        const branchExists = await this.checkIfBranchExists(branchName)
-        const baseBranchExists = await this.checkIfBranchExistsOnRemote(this.data.github.base)
-
-        if (!baseBranchExists) {
-            console.log({ baseBranchExists })
-            return
-        }
-
         if (error === 'taskIdNotFound') {
             return log && this.log('Branch name must include a Custom Task ID at the start or after an optional branch type', true)
         }
@@ -497,6 +491,17 @@ class GitClick {
         if (error === 'taskNotFound') {
             return log && this.log(`Could not find a task with the Custom ID ${chalk.gray(taskId)}`, true)
         }
+
+        const baseBranchExistsOnRemote = await this.checkIfBranchExistsOnRemote(this.data.github.base)
+
+        if (!baseBranchExistsOnRemote) {
+            if (log) {
+                this.log(`Chosen base branch ${chalk.gray(this.data.github.base)} does not exist on remote in repository ${chalk.gray(`${this.data.github.org}/${this.data.github.repo}`)}`, true)
+            }
+            return
+        }
+
+        const branchExists = await this.checkIfBranchExists(branchName)
 
         if (isNewBranch) {
             if (log) this.log(`Checking out, and pulling base branch ${chalk.gray(this.data.github.base)} from origin remote...`)
@@ -551,7 +556,7 @@ class GitClick {
         )
 
         if (invalidBaseBranch) {
-            this.log(`Chosen base branch ${chalk.gray(this.data.github.base)} does not exist in repository ${chalk.gray(`${this.data.github.org}/${this.data.github.repo}`)}`, true)
+            this.log(`Chosen base branch ${chalk.gray(this.data.github.base)} does not exist on remote in repository ${chalk.gray(`${this.data.github.org}/${this.data.github.repo}`)}`, true)
             return
         }
 
