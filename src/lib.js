@@ -482,7 +482,6 @@ class GitClick {
             isNewBranch,
             error
         } = await this.getSyncData(args, true)
-        if (log) this.log(`Syncing branch ${chalk.gray(branchName)} in ${chalk.gray(`${org}/${repo}`)}...`)
 
         if (error === 'taskIdNotFound') {
             return log && this.log('Branch name must include a Custom Task ID at the start or after an optional branch type', true)
@@ -491,6 +490,8 @@ class GitClick {
         if (error === 'taskNotFound') {
             return log && this.log(`Could not find a task with the Custom ID ${chalk.gray(taskId)}`, true)
         }
+
+        if (log) this.log(`Syncing branch ${chalk.gray(branchName)} in ${chalk.gray(`${org}/${repo}`)}...`)
 
         const baseBranchExistsOnRemote = await this.checkIfBranchExistsOnRemote(this.data.github.base)
 
