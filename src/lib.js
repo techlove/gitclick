@@ -457,7 +457,7 @@ class GitClick {
     }
 
     async handleSync(args, flags, log = false) {
-        if (log) this.log('Syncing task to pull request...')
+        const { org, repo } = await this.getOrgAndRepo()
         const {
             branchName,
             task,
@@ -465,6 +465,7 @@ class GitClick {
             isNewBranch,
             error
         } = await this.getSyncData(args, true)
+        if (log) this.log(`Syncing branch ${chalk.gray(branchName)} in ${chalk.gray(`${org}/${repo}`)}...`)
 
         const branchExists = await this.checkIfBranchExists(branchName)
 
@@ -502,13 +503,13 @@ class GitClick {
                 if (log) this.log('Undrafting pull request...')
                 await this.undraftPullRequest(existingPullRequest)
             }
-            response = await this.updatePullRequest()
+            response = await this.updatePullRequest().catch(e => e)
         } else {
             if (log) this.log('Trying to create a new pull request...')
             response = await this.createSyncedPullRequest(!flags.undraft, false, true).catch(e => e)
         }
 
-        const noChanges = (
+        const noChanges = Boolean(
             response?.response?.data?.message === 'Validation Failed' &&
             response?.response?.data?.errors?.some(error => error?.message?.startsWith('No commits between'))
         )
@@ -522,6 +523,16 @@ class GitClick {
         }
 
         const pullRequest = response?.data
+
+        const invalidBaseBranch = Boolean(
+            response?.response?.data?.message === 'Validation Failed' &&
+            response?.response?.data?.errors?.some(error => error?.field === 'base' && error?.code === 'invalid')
+        )
+
+        if (invalidBaseBranch) {
+            this.log(`Chosen base branch ${chalk.gray(this.data.github.base)} does not exist in repository ${chalk.gray(`${this.data.github.org}/${this.data.github.repo}`)}`, true)
+            return
+        }
 
         const taskIsConnected = await this.isTaskConnectedToPullRequest(task, pullRequest)
 
