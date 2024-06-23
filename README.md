@@ -1,5 +1,7 @@
 # [@zentus/gitclick](https://github.com/zentus/gitclick)
-A CLI tool for Clickup Task to GitHub Pull Request syncing and cross-referencing
+A CLI tool for **Clickup** **Task** to **GitHub** **Pull Request** syncing and cross-referencing.
+
+Slightly opinionated.
 
 ### Why do I need this?
 I got tired of doing it manually, maybe you are too.
@@ -10,130 +12,157 @@ npm install -g @zentus/gitclick
 ```
 
 ## Setup
-- [Generate a Clickup Personal API Token](https://clickup.com/api/developer-portal/authentication#generate-your-personal-api-token)
-- [Generate a GitHub Personal Access Token](https://github.com/settings/tokens)
+- [Generate a **Clickup** **Personal API Token**](https://clickup.com/api/developer-portal/authentication#generate-your-personal-api-token)
+- [Generate a **GitHub** **Personal Access Token**](https://github.com/settings/tokens)
 
 Add the following environment variables to `./.env`:
 ```bash
 GITCLICK_CLICKUP_PERSONAL_TOKEN="your_clickup_token"
 GITCLICK_GITHUB_PERSONAL_TOKEN="your_github_token"
-GITCLICK_GITHUB_BASE_BRANCH="your_base_branch" # default: "main"
+GITCLICK_GITHUB_BASE_BRANCH="your_base_branch" # (optional) default: "main"
 ```
 
 Or export them from your shell rc file, (`~/.bashrc` or `~/.zshrc` etc):
 ```bash
 export GITCLICK_CLICKUP_PERSONAL_TOKEN="your_clickup_token"
 export GITCLICK_GITHUB_PERSONAL_TOKEN="your_github_token"
-export GITCLICK_GITHUB_BASE_BRANCH="your_base_branch" # default: "main"
+export GITCLICK_GITHUB_BASE_BRANCH="your_base_branch" # (optional) default: "main"
 ```
 
-If you added them to a shell rc file, restart your terminal to start using the program
+If you added them to a shell rc file, restart your terminal to start using the program.
 
 ## Usage
-### Shorthand
-If a valid command is not passed as the first argument, it will default to `sync`
-  
-The following commands are all valid shorthand:
+### Sync current **Branch**  
 ```bash
-gitclick
-gitclick SOME-1337
-gitclick feature/SOME-1337
-gitclick SOME-1337-important-changes
-gitclick feature/SOME-1337-important-changes
-gitclick feature/SOME-1337 important changes
+glick
 ```
-### Commands
-#### sync {branchNameOrTaskId} {...freetext}
-- A pull request will be created, if it doesn't already exist
-- The pull request name and description will be set to the current name and description of the corresponding Clickup task
-- The pull request will be referenced in a comment in the Clickup task, if comment doesn't already exist
 
+### Sync current **Branch** and undraft **Pull Request**
+```bash
+glick --undraft
+```
+
+### Sync new **Branch**
+```bash
+glick SOME-1337
+```
+**Task** **Tag**s will be used to try to set a `branchType` prefix.
+  
+If the **Task** with **Task** **Custom ID** `SOME-1337` has the **Task** **Tag** `bug`, the **Branch** **Name** will be `bugfix/some-1337`
+  
+If the **Task** with **Task** **Custom ID** `SOME-1337` has the **Task** **Tag** `Feature`, the **Branch** **Name** will be `feature/some-1337`
+
+If no matching **Task** **Tag**s are found, the **Branch** **Name** will be `some-1337`.  
+
+### Sync new **Branch** as non-draft
+```bash
+glick SOME-1337 --undraft
+```
+  
+### Commands
+#### `gitclick sync`
+- A **Pull Request** will be created, if it doesn't already exist.
+- The **Pull Request** **Title** will be set to the current **Task** **Name**, and the **Pull Request** **Body** will include a link to the **Task** and the current **Markdown Description** of the **Task** corresponding to either the current **Branch** or a new **Branch** to be created.
+- The **Pull Request** **URL** will be referenced in a **Task** **Comment** in the **Task**, if such a **Task** **Comment** doesn't already exist in the **Task**.
+  
 #### Arguments
-##### `branchNameOrTaskId` (Optional)  
-If provided, a new branch will be created with `GITCLICK_GITHUB_BASE_BRANCH` as its base branch.
+##### 1. Create new **Branch** (Optional)
+Format: `{branchType}{separator}{taskId}{freetext}`  
   
-If not provided, the current branch will be used.
+If not provided, the current **Branch** will be used. The current **Branch** must include a **Task** **Custom ID** of an existing **Task**.
   
-`branchNameOrTaskId` or the current branch must include a Task Custom ID of an existing task.
+If provided, a new **Branch** will be created with `GITCLICK_GITHUB_BASE_BRANCH` as its **Base** **Branch**. At least subargument `taskId` must be included.
   
-Task tags will be used to try to set a branch type (prefix).
+##### Subarguments
   
-Example:
+###### `branchType` (Optional)  
+  
+A string to use as prefix of the new **Branch** **Name**. Commonly `feature`, `bugfix`, `refactor` or `docs` etc (See [GitClick.branchTypes](https://github.com/zentus/gitclick/blob/main/src/lib.js#L38)). If not provided, current **Task** **Tag**s will be used to try to set a `branchType`.
+  
+###### `separator` (Optional)  
+  
+A character separating `branchType` and `taskId`. Commonly `/` or `-`. Must be `/` if using an uncommon `branchType` string.
+  
+###### `taskId` (Required)  
+  
+The **Task** **Custom ID** of an existing **Task**.
+
+###### `freetext` (Optional)  
+  
+A **Branch** **Name** suffix. May include spaces, as it will be normalized.
+  
+#### Example
 ```bash
 gitclick sync SOME-1337
+
+# gitclick sync feat/SOME-1337 do very important things
+# Branch Name will be "feature/some-1337-do-very-important-things"
 ```
 
-##### `freetext` (Optional)    
-If provided, the branch name will include a normalized version of its value.
-  
-Example:
-```bash
-gitclick sync SOME-1337 do very important things
-# Branch name will be "some-1337-do-very-important-things"
-```
+##### Flags
+###### `undraft` (Optional)  
+If provided, the **Pull Request** will be set to `Ready for review` 
 
-#### Flags
-##### `undraft` (Optional)  
-If provided, the pull request will be set to `Ready for review`
+(Note: If you want to set a `Ready for review` **Pull Request** back to `Draft`, you currently need to do it manually in **GitHub** due to **GitHub** **API** limitations)
   
-Example:
 ```bash
 gitclick sync SOME-1337 --undraft
 gitclick sync --undraft
 ```
 
-##### `base` (Optional)
+###### `base` (Optional)
 If provided, will override `GITCLICK_GITHUB_BASE_BRANCH`
   
-Example:
 ```bash
 gitclick sync SOME-1337 --base mybasebranch
 gitclick sync --base mybasebranch
 ```
 
-## More examples
+## More Examples
 
-### Sync new branch
-Make sure the task exists, and prefix the branch name with a Task Custom ID, i.e "SOME-1337"
-
-With Task Custom ID only
+With suffixed **Branch** **Name**
 ```bash
-gitclick sync SOME-1337
-# Branch name will be "some-1337"
-# Task tags will be used to try to set a branch type (prefix)
-
-# If the task "SOME-1337" has the tag "bug" on it
-# Branch name will be "bugfix/some-1337"
-
-# If the task "SOME-1337" has the tag "feature" on it
-# Branch name will be "feature/some-1337"
+glick SOME-1337-important-changes
+# Branch Name will be "some-1337-important-changes"
 ```
 
-With suffixed branch name
+With suffixed **Branch** **Name** as free text
 ```bash
-gitclick sync SOME-1337-important-changes
-# Branch name will be "some-1337-important-changes"
+glick SOME-1337 lots of stuff
+# Branch Name will be "some-1337-lots-of-stuff"
 ```
 
-With suffixed branch name as free text
+With specified common `branchType`
 ```bash
-gitclick sync SOME-1337 lots of stuff
-# Branch name will be "some-1337-lots-of-stuff"
+glick bug/SOME-1337 important changes
+# Branch Name will be "bugfix/some-1337-important-changes"
+# Overrides any branchType that could be determined from Task Tags
 ```
 
-With specified branch type (prefix)
+With specified uncommon `branchType`
 ```bash
-gitclick sync feature/SOME-1337-important-changes
-# Branch name will be "feature/some-1337-important-changes"
-# Overrides any branch type that could be determined from task tags
+glick what/SOME-1337 are you sure
+# Branch Name will be "what/some-1337-are-you-sure"
+# Overrides any branchType that could be determined from Task Tags
 ```
 
-### Sync current branch
-```bash
-gitclick sync
-```
+### Shorthand Aliases
+`glick` is a bundled alias for `gitclick`
 
-### Sync current branch and undraft pull request
+If a valid command is not passed as the first argument, it will default to `sync`
+  
+The following commands are all valid aliases for the `sync` command:
 ```bash
-gitclick sync --undraft
+glick
+gitclick
+glick SOME-1337
+gitclick SOME-1337
+glick feature/SOME-1337
+gitclick feature/SOME-1337
+glick SOME-1337-important-changes
+gitclick SOME-1337-important-changes
+glick bug/SOME-1337-important-changes
+gitclick bug/SOME-1337-important-changes
+glick feature/SOME-1337 important changes
+gitclick feature/SOME-1337 important changes
 ```
