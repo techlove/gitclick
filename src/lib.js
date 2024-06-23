@@ -214,6 +214,14 @@ class GitClick {
         return Number(teamId)
     }
 
+    log(message, isError = false) {
+        if (!message) return
+        const chalker = isError ? chalk.bold.red : chalk.bold
+        message = chalker(message)
+        console[isError ? 'error' : 'log'](message)
+        if (isError) return process.exit(1)
+    }
+
     async getTask(taskId) {
         taskId = taskId.toUpperCase()
         try {
@@ -228,12 +236,18 @@ class GitClick {
         }
     }
 
-    log(message, isError = false) {
-        if (!message) return
-        const chalker = isError ? chalk.bold.red : chalk.bold
-        message = chalker(message)
-        console[isError ? 'error' : 'log'](message)
-        if (isError) return process.exit(1)
+    async getTaskImages(task, pullRequest) {
+        task = task || await this.getCurrentTask()
+        pullRequest = pullRequest || await this.getPullRequest()
+        if (!pullRequest.head.repo.private) {
+            return this.log('Images can only be uploaded to Pull Requests of private repositories', true)
+        }
+
+        const imageUrls = task.attachments
+            .filter(attachment => attachment.mimetype.includes('image') && attachment.url)
+            .map(attachment => attachment.url)
+
+        console.log(imageUrls)
     }
 
     async getCurrentTask() {

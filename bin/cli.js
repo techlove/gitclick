@@ -12,10 +12,15 @@ class Command {
     constructor(CLI) {
         this.CLI = CLI
         this.sync = this.sync.bind(this)
+        this.test = this.test.bind(this)
     }
 
     async sync() {
         return this.CLI.lib.handleSync(this.CLI.args, this.CLI.flags, true)
+    }
+
+    async test() {
+        const taskImages = await this.CLI.lib.getTaskImages()
     }
 }
 
