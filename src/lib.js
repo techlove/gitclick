@@ -234,6 +234,9 @@ class GitClick {
     }
 
     extractTaskId(branchName) {
+        branchName = branchName.includes('/')
+            ? branchName.split('/').slice(1).join('/')
+            : branchName
         const taskId = this.singleGroupMatch(branchName, this.regex.startsWithTaskId)
         return taskId?.toUpperCase()
     }
