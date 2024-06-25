@@ -403,14 +403,22 @@ class GitClick {
         })
     }
 
-    async createTaskComment(text, taskId) {
+    async createTaskComment(url, taskId) {
         taskId = taskId || (await this.getCurrentTask()).id
 
         if (!taskId) return null
 
         await this.clickup.tasks.addComment(taskId, {
-            comment_text: text,
-            notify_all: false
+            notify_all: false,
+            comment: [
+                {
+                    "type": "bookmark",
+                    "bookmark": {
+                        "url": url,
+                        "service": "custom"
+                    }
+                }
+            ]
         })
     }
 
@@ -418,7 +426,7 @@ class GitClick {
         if (!task || !pullRequest) throw new Error('isTaskConnectedToPullRequest expected task and pullRequest as arguments, got', JSON.stringify(task, pullRequest))
         const res = await this.clickup.tasks.getComments(task.id)
         const comments = res?.body?.comments || []
-        return comments.some(comment => comment.comment_text === pullRequest.html_url)
+        return comments.some(comment => comment?.comment.some(c => c?.bookmark?.url === pullRequest.html_url))
     }
 
     async undraftPullRequest(pullRequest) {

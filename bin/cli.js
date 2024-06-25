@@ -67,4 +67,3 @@ class CLI {
 
 const cli = new CLI()
 cli.setup()
-
