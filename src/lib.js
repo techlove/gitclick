@@ -253,8 +253,8 @@ class GitClick {
         taskId = taskId.toUpperCase()
         try {
             const { body } = await this.clickup.tasks.get(taskId, {
-                custom_task_ids: 'true',
-                include_markdown_description: 'true',
+                custom_task_ids: true,
+                include_markdown_description: true,
                 team_id: await this.getTeamId()
             })
             return body
@@ -348,9 +348,8 @@ class GitClick {
         const task = await this.getCurrentTask()
 
         if (!task) return null
-
         const bodyHeading = `### [${task.name}](${task.url})`
-        const bodyDescription = `#### ${task.custom_id}\n${task.markdown_description}\n`
+        const bodyDescription = `#### ${task.custom_id}\n${task.markdown_description || task.description}\n`
         const body = this.normalizePullRequestBody(`${bodyHeading}\n${bodyDescription}`)
 
         const response = await this.createPullRequest({
