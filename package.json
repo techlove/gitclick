@@ -1,5 +1,5 @@
 {
-  "name": "@zentus/gitclick",
+  "name": "@techlove/gitclick",
   "version": "0.0.14",
   "description": "lib and cli for github<->clickup integration",
   "main": "./src/lib.js",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/zentus/gitclick"
+    "url": "https://github.com/techlove/gitclick"
   },
   "keywords": [
     "github",

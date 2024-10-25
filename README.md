@@ -1,9 +1,9 @@
-# [@zentus/gitclick](https://github.com/zentus/gitclick)
+# [@techlove/gitclick](https://github.com/techlove/gitclick)
 ## A CLI tool for **Clickup** **Task** to **GitHub** **Pull Request** syncing and cross-referencing.
 
 ## Installation
 ```bash
-npm install -g @zentus/gitclick
+npm install -g @techlove/gitclick
 ```
 
 ## Setup
@@ -78,7 +78,7 @@ gitclick sync SOME-1337 --undraft
   
 ###### `branchType` (Optional)  
   
-A string to use as prefix of the new **Branch** **Name**. Commonly `feature`, `bugfix`, `refactor` or `docs` etc (See [GitClick.branchTypes](https://github.com/zentus/gitclick/blob/main/src/lib.js#L38)). If not provided, current **Task** **Tag**s will be used to try to set a `branchType`.
+A string to use as prefix of the new **Branch** **Name**. Commonly `feature`, `bugfix`, `refactor` or `docs` etc (See [GitClick.branchTypes](https://github.com/techlove/gitclick/blob/main/src/lib.js#L38)). If not provided, current **Task** **Tag**s will be used to try to set a `branchType`.
   
 ###### `separator` (Optional)  
   
@@ -180,4 +180,4 @@ If you're using **Clickup** you might find this tool useful, if not, you've wast
   
 
 ## License
-[@zentus/gitclick](https://github.com/zentus/gitclick) is open source software [licensed as MIT](https://github.com/zentus/gitclick/blob/main/LICENSE).
+[@techlove/gitclick](https://github.com/techlove/gitclick) is open source software [licensed as MIT](https://github.com/techlove/gitclick/blob/main/LICENSE).
