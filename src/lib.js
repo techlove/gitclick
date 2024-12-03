@@ -363,14 +363,19 @@ class GitClick {
 
     async getGitRemoteUrl() {
         if (this.data.github.remoteUrl) return this.data.github.remoteUrl
-        const config = await fs.readFile(path.join(this.dir, '.git', 'config'), 'utf8')
-        const regex = /\[remote"origin"\]url=(.+)fetch/g
-        const startIndex = config.indexOf(`[remote "origin"]\n\turl`)
-        let string = config.slice(startIndex)
-        string = string.replaceAll(/\s/g, '')
-        const url = this.singleGroupMatch(string, regex)
-        this.data.github.remoteUrl = url
-        return url
+        let gitConfigFile = await fs.readFile(path.join(this.dir, '.git', 'config'), 'utf8').catch(() => null)
+
+        if (!gitConfigFile) {
+            throw new Error(`The current working directory is not a git repository. Could not find file "${path.join(this.dir, '.git', 'config')}"`)
+        }
+
+        gitConfigFile = gitConfigFile.replace(/\s/g, '')
+        const regex = /\[remote"origin"\]url=(.+)\.gitfetch/g
+        const [, remoteUrl] = regex.exec(gitConfigFile)
+        const remoteUrlWithExtension = `${remoteUrl}.git`
+
+        this.data.github.remoteUrl = remoteUrlWithExtension
+        return remoteUrlWithExtension
     }
 
     async getPullRequest() {
