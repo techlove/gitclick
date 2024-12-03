@@ -12,10 +12,15 @@ class Command {
     constructor(CLI) {
         this.CLI = CLI
         this.sync = this.sync.bind(this)
+        this.version = this.version.bind(this)
     }
 
     async sync() {
         return this.CLI.lib.handleSync(this.CLI.args, this.CLI.flags, true)
+    }
+
+    async version() {
+        return this.CLI.lib.handleVersion()
     }
 }
 
@@ -26,7 +31,9 @@ class CLI {
         this.args = overrides.args || args
         this.flags = {
             base: overrides?.flags?.base || yarg.base,
-            undraft: overrides?.flags?.undraft || yarg.undraft
+            undraft: overrides?.flags?.undraft || yarg.undraft,
+            v: yarg.v,
+            version: yarg.version
         }
         this.lib = new GitClick({
             env: overrides.env || process.env,
@@ -40,6 +47,11 @@ class CLI {
     }
 
     handleSyncShorthand() {
+        if (this.flags.v || this.flags.version) {
+            this.command = 'version'
+            return
+        }
+
         if (this.command && !this.commands.includes(this.command)) {
             this.args = [this.command, ...this.args]
             this.command = 'sync'

@@ -589,6 +589,12 @@ class GitClick {
 
         if (log) console.log(`\n${prLabel}\n${b(pullRequest.title)}\n${pullRequest?.html_url}\n\n${taskLabel}\n${b(task.name)}\n${task.url}`)
     }
+
+    async handleVersion() {
+        const pkg = await fs.readFile(path.join(import.meta.dirname, '..', 'package.json'), 'utf8')
+        const pkgJson = JSON.parse(pkg)
+        console.log(pkgJson.version)
+    }
 }
 
 export default GitClick
