@@ -1,6 +1,6 @@
 {
   "name": "@techlove/gitclick",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "lib and cli for github<->clickup integration",
   "main": "./src/lib.js",
   "scripts": {
